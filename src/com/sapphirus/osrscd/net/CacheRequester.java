@@ -10,7 +10,9 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
+import static com.sapphirus.osrscd.utils.BufferUtilities.putMediumInt;
 import static com.sapphirus.osrscd.net.CacheRequester.State.*;
+
 
 /**
  * Manages the requesting of files from the game server.
@@ -146,7 +148,7 @@ public class CacheRequester {
                 while (!requests.isEmpty() && waiting.size() < 20) {
                     FileRequest request = requests.poll();
                     outputBuffer.put(request.getIndex() == 255 ? (byte) 1 : (byte) 0);
-                    putMedInt(outputBuffer, (int) request.hash());
+                    putMediumInt(outputBuffer, (int) request.hash());
                     output.write(outputBuffer.array());
                     output.flush();
                     outputBuffer.clear();
@@ -239,7 +241,7 @@ public class CacheRequester {
     private void sendConnectionInfo() {
         try {
             outputBuffer.put((byte) 3);
-            putMedInt(outputBuffer, 0);
+            putMediumInt(outputBuffer, 0);
             output.write(outputBuffer.array());
             output.flush();
             outputBuffer.clear();
@@ -268,19 +270,6 @@ public class CacheRequester {
         } catch (IOException ioException) {
             ioException.printStackTrace();
         }
-    }
-
-
-    /**
-     * Helper method to put a three-byte value into a buffer.
-     *
-     * @param buffer The buffer
-     * @param value  The value to be placed into the buffer
-     */
-    private void putMedInt(ByteBuffer buffer, int value) {
-        buffer.put((byte) (value >> 16));
-        buffer.put((byte) (value >> 8));
-        buffer.put((byte) value);
     }
 
 }
