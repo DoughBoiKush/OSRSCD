@@ -1,2 +1,2 @@
-java -cp out CacheDownloader
+java -jar OSRCD.jar
 pause

@@ -1,1 +1,1 @@
-java -cp out CacheDownloader
+java -jar OSRSCD.jar
