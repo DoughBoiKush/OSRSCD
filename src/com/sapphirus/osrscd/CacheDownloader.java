@@ -271,13 +271,11 @@ public class CacheDownloader {
             RandomAccessFile dataFile = new RandomAccessFile("./data/main_file_cache.dat2", "rw");
             RandomAccessFile referenceFile = new RandomAccessFile("./data/main_file_cache.idx255", "rw");
             reference = new FileStore(255, dataFile.getChannel(), referenceFile.getChannel(), 0x7a120);
-            System.out.println(count);
             stores = new FileStore[count];
             for (int i = 0; i < count; i++) {
                 RandomAccessFile indexFile = new RandomAccessFile("./data/main_file_cache.idx" + i, "rw");
                 stores[i] = new FileStore(i, dataFile.getChannel(), indexFile.getChannel(), 0xf4240);
             }
-
         } catch (IOException ioex) {
             ioex.printStackTrace();
         }
