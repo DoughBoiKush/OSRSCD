@@ -15,12 +15,13 @@ import static com.sapphirus.osrscd.utils.BufferUtilities.putMediumInt;
  */
 public class FileStore {
 
-    private static final int IDX_BLOCK_LEN = 6;
-    private static final int HEADER_LEN = 8;
-    private static final int EXPANDED_HEADER_LEN = 10;
-    private static final int BLOCK_LEN = 512;
-    private static final int EXPANDED_BLOCK_LEN = 510;
-    private static final int TOTAL_BLOCK_LEN = HEADER_LEN + BLOCK_LEN;
+    private static final int IDX_BLOCK_LEN = 6,
+            HEADER_LEN = 8,
+            EXPANDED_HEADER_LEN = 10,
+            BLOCK_LEN = 512,
+            EXPANDED_BLOCK_LEN = 510,
+            TOTAL_BLOCK_LEN = HEADER_LEN + BLOCK_LEN;
+
     private static ByteBuffer tempBuffer = ByteBuffer.allocateDirect(TOTAL_BLOCK_LEN);
 
     private int index;
@@ -75,10 +76,7 @@ public class FileStore {
             int size = getMediumInt(tempBuffer);
             int block = getMediumInt(tempBuffer);
 
-            if (size < 0 || size > maxSize) {
-                return null;
-            }
-            if (block <= 0 || block > dataChannel.size() / TOTAL_BLOCK_LEN) {
+            if (size < 0 || size > maxSize || block <= 0 || block > dataChannel.size() / TOTAL_BLOCK_LEN) {
                 return null;
             }
 
@@ -108,10 +106,8 @@ public class FileStore {
                 nextBlock = getMediumInt(tempBuffer);
                 currentIndex = tempBuffer.get() & 0xff;
 
-                if (file != currentFile || chunk != currentChunk || index != currentIndex) {
-                    return null;
-                }
-                if (nextBlock < 0 || nextBlock > dataChannel.size() / TOTAL_BLOCK_LEN) {
+                if (file != currentFile || chunk != currentChunk || index != currentIndex ||
+                        nextBlock < 0 || nextBlock > dataChannel.size() / TOTAL_BLOCK_LEN) {
                     return null;
                 }
 
@@ -140,13 +136,8 @@ public class FileStore {
         if (size < 0 || size > maxSize) {
             throw new IllegalArgumentException("File too big: " + file + " size: " + size);
         }
-
         boolean success = put(file, data, size, true);
-        if (!success) {
-            success = put(file, data, size, false);
-        }
-
-        return success;
+        return !success ? put(file, data, size, false) : success;
     }
 
     private boolean put(int file, ByteBuffer data, int size, boolean exists) {
@@ -199,10 +190,8 @@ public class FileStore {
                     nextBlock = getMediumInt(tempBuffer);
                     currentIndex = tempBuffer.get() & 0xff;
 
-                    if (file != currentFile || chunk != currentChunk || index != currentIndex) {
-                        return false;
-                    }
-                    if (nextBlock < 0 || nextBlock > dataChannel.size() / TOTAL_BLOCK_LEN) {
+                    if (file != currentFile || chunk != currentChunk || index != currentIndex
+                            || nextBlock < 0 || nextBlock > dataChannel.size() / TOTAL_BLOCK_LEN) {
                         return false;
                     }
                 }
