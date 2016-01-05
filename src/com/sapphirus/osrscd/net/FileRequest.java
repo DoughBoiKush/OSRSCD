@@ -4,6 +4,8 @@ import java.nio.ByteBuffer;
 
 /**
  * Represents a request for a file from the game server.
+ *
+ * @author Method
  */
 public class FileRequest {
 
