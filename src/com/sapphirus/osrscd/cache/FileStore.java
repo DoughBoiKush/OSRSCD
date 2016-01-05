@@ -95,17 +95,14 @@ public class FileStore {
 
                 int currentFile, currentChunk, nextBlock, currentIndex;
 
-                if (file <= 65535) {
+                if (file <= 65535)
                     currentFile = tempBuffer.getShort() & 0xffff;
-                    currentChunk = tempBuffer.getShort() & 0xffff;
-                    nextBlock = getMediumInt(tempBuffer);
-                    currentIndex = tempBuffer.get() & 0xff;
-                } else {
+                else
                     currentFile = tempBuffer.getInt();
-                    currentChunk = tempBuffer.getShort() & 0xffff;
-                    nextBlock = getMediumInt(tempBuffer);
-                    currentIndex = tempBuffer.get() & 0xff;
-                }
+
+                currentChunk = tempBuffer.getShort() & 0xffff;
+                nextBlock = getMediumInt(tempBuffer);
+                currentIndex = tempBuffer.get() & 0xff;
 
                 if (file != currentFile || chunk != currentChunk || index != currentIndex) {
                     return null;
@@ -184,22 +181,19 @@ public class FileStore {
             while (remaining > 0) {
                 int nextBlock = 0;
                 if (exists) {
+                    int currentFile, currentChunk, currentIndex;
                     tempBuffer.position(0).limit(headerLen);
                     dataChannel.read(tempBuffer, block * TOTAL_BLOCK_LEN);
                     tempBuffer.flip();
 
-                    int currentFile, currentChunk, currentIndex;
-                    if (file <= 0xffff) {
+                    if (file <= 0xffff)
                         currentFile = tempBuffer.getShort() & 0xffff;
-                        currentChunk = tempBuffer.getShort() & 0xffff;
-                        nextBlock = getMediumInt(tempBuffer);
-                        currentIndex = tempBuffer.get() & 0xff;
-                    } else {
+                     else
                         currentFile = tempBuffer.getInt();
-                        currentChunk = tempBuffer.getShort() & 0xffff;
-                        nextBlock = getMediumInt(tempBuffer);
-                        currentIndex = tempBuffer.get() & 0xff;
-                    }
+
+                    currentChunk = tempBuffer.getShort() & 0xffff;
+                    nextBlock = getMediumInt(tempBuffer);
+                    currentIndex = tempBuffer.get() & 0xff;
 
                     if (file != currentFile || chunk != currentChunk || index != currentIndex) {
                         return false;
@@ -224,17 +218,13 @@ public class FileStore {
                     nextBlock = 0;
                 }
                 tempBuffer.position(0).limit(TOTAL_BLOCK_LEN);
-                if (file <= 0xffff) {
+                if (file <= 0xffff)
                     tempBuffer.putShort((short) file);
-                    tempBuffer.putShort((short) chunk);
-                    putMediumInt(tempBuffer, nextBlock);
-                    tempBuffer.put((byte) index);
-                } else {
+                else
                     tempBuffer.putInt(file);
-                    tempBuffer.putShort((short) chunk);
-                    putMediumInt(tempBuffer, nextBlock);
-                    tempBuffer.put((byte) index);
-                }
+                tempBuffer.putShort((short) chunk);
+                putMediumInt(tempBuffer, nextBlock);
+                tempBuffer.put((byte) index);
 
                 int blockSize = remaining > blockLen ? blockLen : remaining;
                 data.limit(data.position() + blockSize);

@@ -4,7 +4,7 @@ import com.sapphirus.osrscd.cache.FileStore;
 import com.sapphirus.osrscd.cache.ReferenceTable;
 import com.sapphirus.osrscd.net.CacheRequester;
 import com.sapphirus.osrscd.net.FileRequest;
-import com.sapphirus.osrscd.util.Whirlpool;
+import com.sapphirus.osrscd.hash.Whirlpool;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
@@ -20,7 +20,7 @@ import java.util.zip.CRC32;
  */
 public class CacheDownloader {
 
-    private static final int MAJOR_VERSION = 102;
+    private static final int REVISION = 102;
     private static final int WORLD = 18;
 
 
@@ -64,7 +64,7 @@ public class CacheDownloader {
      * Connects to the server, retrying as needed if the version is incorrect.
      */
     private void connect() {
-        requester.connect("oldschool" + WORLD + ".runescape.com", MAJOR_VERSION, -1, "");
+        requester.connect("oldschool" + WORLD + ".runescape.com", REVISION);
 
         while (requester.getState() != CacheRequester.State.CONNECTED) {
             requester.process();

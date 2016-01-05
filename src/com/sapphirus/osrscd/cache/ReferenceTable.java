@@ -6,6 +6,7 @@ import java.nio.ByteBuffer;
  * Contains data about the files stored inside each cache index.
  *
  * @author Method
+ * @author SapphirusBeryl
  */
 public class ReferenceTable {
 
@@ -149,14 +150,8 @@ public class ReferenceTable {
             }
         }
 
-        if (hasIdentifiers) {
-            for (int i = 0; i < entryCount; i++) {
-                entries[i].identifier = buffer.getInt();
-            }
-        } else {
-            for (int i = 0; i < entryCount; i++) {
-                entries[i].identifier = -1;
-            }
+        for (int i = 0; i < entryCount; i++) {
+            entries[i].identifier = hasIdentifiers ? buffer.getInt() : -1;
         }
 
         for (int i = 0; i < entryCount; i++) {
@@ -257,7 +252,6 @@ public class ReferenceTable {
                 return entries[i];
             }
         }
-
         return null;
     }
 
@@ -271,10 +265,6 @@ public class ReferenceTable {
     }
 
     private static int getSmart(ByteBuffer buffer) {
-        byte v = buffer.get(buffer.position());
-        if (v >= 0)
-            return buffer.getShort() & 0xffff;
-        else
-            return buffer.getInt() & 0x7fffffff;
+        return buffer.get(buffer.position()) >= 0 ? buffer.getShort() & 0xffff : buffer.getInt() & 0x7fffffff;
     }
 }

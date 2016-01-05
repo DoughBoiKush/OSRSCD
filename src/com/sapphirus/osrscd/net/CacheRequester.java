@@ -10,6 +10,8 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 
+import static com.sapphirus.osrscd.net.CacheRequester.State.*;
+
 /**
  * Manages the requesting of files from the game server.
  *
@@ -29,9 +31,7 @@ public class CacheRequester {
     private OutputStream output;
     private State state;
     private String host;
-    private int major;
-    private int minor;
-    private String key;
+    private int revision;
     private FileRequest current;
     private long lastUpdate;
     private ByteBuffer outputBuffer;
@@ -41,9 +41,9 @@ public class CacheRequester {
      * Creates a new CacheRequester instance.
      */
     public CacheRequester() {
-        requests = new LinkedList<FileRequest>();
-        waiting = new HashMap<Long, FileRequest>();
-        state = State.DISCONNECTED;
+        requests = new LinkedList<>();
+        waiting = new HashMap<>();
+        state = DISCONNECTED;
         outputBuffer = ByteBuffer.allocate(4);
         inputBuffer = ByteBuffer.allocate(8);
     }
@@ -53,14 +53,11 @@ public class CacheRequester {
      * protocol handshake.
      *
      * @param host  The world to connect to
-     * @param major The client's major version
-     * @param minor The client's minor version
+     * @param major The client's revision
      */
-    public void connect(String host, int major, int minor, String key) {
+    public void connect(String host, int major) {
         this.host = host;
-        this.major = major;
-        this.minor = minor;
-        this.key = key;
+        this.revision = major;
 
         try {
             socket = new Socket(host, 43594);
@@ -69,11 +66,11 @@ public class CacheRequester {
 
             ByteBuffer buffer = ByteBuffer.allocate(5);
             buffer.put((byte) 15); // handshake type
-            buffer.putInt(major); // client's major version
+            buffer.putInt(major); // client's revision version
             output.write(buffer.array());
             output.flush();
 
-            state = State.CONNECTING;
+            state = CONNECTING;
         } catch (IOException ioex) {
             ioex.printStackTrace();
         }
@@ -95,7 +92,7 @@ public class CacheRequester {
     /**
      * Gets the current state of the requester.
      *
-     * @return The requester's current state.
+     * @return The requester's current 
      */
     public State getState() {
         return state;
@@ -110,72 +107,62 @@ public class CacheRequester {
      * server.
      */
     public void process() {
-        if (state == State.CONNECTING) {
+        if (state == CONNECTING) {
             try {
                 if (input.available() > 0) {
                     int response = input.read();
                     if (response == 0) {
-                        System.out.println("Correct version: " + major);
-
+                        System.out.println("Correct version: " + revision);
                         System.out.println();
-
                         sendConnectionInfo();
                         lastUpdate = System.currentTimeMillis();
-                        state = State.CONNECTED;
+                        state = CONNECTED;
                     } else if (response == 6) {
-                        state = State.OUTDATED;
-                        System.out.println("Invalid version " + major + " "
-                                + minor + ", trying again");
+                        state = OUTDATED;
+                        System.out.println("Invalid version " + revision + ", trying again");
                     } else {
-                        state = State.ERROR;
+                        state = ERROR;
                     }
                 }
-            } catch (IOException ioex) {
-                throw new RuntimeException(ioex);
+            } catch (IOException exception) {
+                throw new RuntimeException(exception);
             }
-        } else if (state == State.OUTDATED) {
+        } else if (state == OUTDATED) {
             reset();
-            connect(host, ++major, minor, key);
-        } else if (state == State.ERROR) {
+            connect(host, ++revision);
+        } else if (state == ERROR) {
             throw new RuntimeException("Unexpected server response");
-        } else if (state == State.DISCONNECTED) {
+        } else if (state == DISCONNECTED) {
             reset();
-            connect(host, major, minor, key);
+            connect(host, revision);
         } else {
             if (lastUpdate != 0
                     && System.currentTimeMillis() - lastUpdate > 30000) {
                 System.out.println("Server timeout, dropping connection");
-                state = State.DISCONNECTED;
+                state = DISCONNECTED;
                 return;
             }
             try {
                 while (!requests.isEmpty() && waiting.size() < 20) {
                     FileRequest request = requests.poll();
-                    outputBuffer.put(request.getIndex() == 255 ? (byte) 1
-                            : (byte) 0);
+                    outputBuffer.put(request.getIndex() == 255 ? (byte) 1 : (byte) 0);
                     putMedInt(outputBuffer, (int) request.hash());
                     output.write(outputBuffer.array());
                     output.flush();
                     outputBuffer.clear();
-                    System.out.println("Requested " + request.getIndex() + ","
-                            + request.getFile());
+                    System.out.println("Requested " + request.getIndex() + "," + request.getFile());
                     waiting.put(request.hash(), request);
                 }
                 for (int i = 0; i < 100; i++) {
                     int available = input.available();
-                    if (available < 0) {
-                        throw new IOException();
-                    }
-                    if (available == 0) {
-                        break;
-                    }
+                    if (available < 0) throw new IOException();
+                    if (available == 0) break;
                     lastUpdate = System.currentTimeMillis();
                     int needed = 0;
-                    if (current == null) {
+                    if (current == null)
                         needed = 8;
-                    } else if (current.getPosition() == 0) {
+                    else if (current.getPosition() == 0)
                         needed = 1;
-                    }
                     if (needed > 0) {
                         if (available >= needed) {
                             if (current == null) {
@@ -216,12 +203,10 @@ public class CacheRequester {
                                 - (current.getIndex() != 255 ? 2 : 0);
                         int blockSize = 512 - current.getPosition();
                         int remaining = totalSize - buffer.position();
-                        if (remaining < blockSize) {
+                        if (remaining < blockSize)
                             blockSize = remaining;
-                        }
-                        if (available < blockSize) {
+                        if (available < blockSize)
                             blockSize = available;
-                        }
                         int read = input.read(buffer.array(),
                                 buffer.position(), blockSize);
                         buffer.position(buffer.position() + read);
@@ -238,11 +223,11 @@ public class CacheRequester {
                         }
                     }
                 }
-            } catch (IOException ioex) {
-                ioex.printStackTrace();
+            } catch (IOException exception) {
+                exception.printStackTrace();
                 sendConnectionInfo();
-                state = State.DISCONNECTED;
-                System.exit(0);
+                state = DISCONNECTED;
+                System.exit(1);
             }
         }
     }
@@ -253,14 +238,13 @@ public class CacheRequester {
      */
     private void sendConnectionInfo() {
         try {
-
             outputBuffer.put((byte) 3);
             putMedInt(outputBuffer, 0);
             output.write(outputBuffer.array());
             output.flush();
             outputBuffer.clear();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+        } catch (IOException exception) {
+            exception.printStackTrace();
         }
     }
 
@@ -270,22 +254,22 @@ public class CacheRequester {
      * reestablished.
      */
     private void reset() {
-        for (FileRequest request : waiting.values()) {
-            requests.offer(request);
-        }
-        waiting.clear();
-
         try {
+            for (FileRequest request : waiting.values()) {
+                requests.offer(request);
+            }
+            waiting.clear();
             socket.close();
-        } catch (IOException ioex) {
-            ioex.printStackTrace();
+            socket = null;
+            input = null;
+            output = null;
+            current = null;
+            lastUpdate = 0;
+        } catch (IOException ioException) {
+            ioException.printStackTrace();
         }
-        socket = null;
-        input = null;
-        output = null;
-        current = null;
-        lastUpdate = 0;
     }
+
 
     /**
      * Helper method to put a three-byte value into a buffer.
@@ -298,4 +282,5 @@ public class CacheRequester {
         buffer.put((byte) (value >> 8));
         buffer.put((byte) value);
     }
+
 }

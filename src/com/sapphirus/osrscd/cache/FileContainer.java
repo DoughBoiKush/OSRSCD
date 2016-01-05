@@ -13,6 +13,7 @@ import java.util.zip.GZIPInputStream;
  * A container class for files stored inside the cache.
  *
  * @author Method
+ * @author SapphirusBeryl
  */
 public class FileContainer {
 
@@ -38,18 +39,14 @@ public class FileContainer {
     /**
      * Reads the container data and instantiates the internal buffer array.
      *
-     * @param buffer The file data
+     * @param byteBuffer The file data
      */
-    private void init(ByteBuffer buffer) {
-        compression = buffer.get() & 0xff;
-        int compressedSize = buffer.getInt();
-        if (compression == 0) {
-            size = compressedSize;
-        } else {
-            size = buffer.getInt();
-        }
-        this.buffer = new byte[compressedSize];
-        buffer.get(this.buffer);
+    private void init(ByteBuffer byteBuffer) {
+        compression = byteBuffer.get() & 0xff;
+        int compressedSize = byteBuffer.getInt();
+        size = compression == 0 ? compressedSize : byteBuffer.getInt();
+        buffer = new byte[compressedSize];
+        byteBuffer.get(this.buffer);
     }
 
     /**
@@ -62,9 +59,9 @@ public class FileContainer {
             return buffer;
         }
         byte[] result = new byte[size];
-        if (compression == 1) {
             try {
-                DataInputStream stream = new DataInputStream(new BZip2CompressorInputStream(
+                DataInputStream stream = new DataInputStream(compression == 1 ? new BZip2CompressorInputStream(
+                        new ByteArrayInputStream(buffer)) : new GZIPInputStream(
                         new ByteArrayInputStream(buffer)));
                 stream.readFully(result);
                 stream.close();
@@ -72,17 +69,6 @@ public class FileContainer {
                 ioex.printStackTrace();
                 return null;
             }
-        } else {
-            try {
-                DataInputStream stream = new DataInputStream(new GZIPInputStream(
-                        new ByteArrayInputStream(buffer)));
-                stream.readFully(result);
-                stream.close();
-            } catch (IOException ioex) {
-                ioex.printStackTrace();
-                return null;
-            }
-        }
         return result;
     }
 

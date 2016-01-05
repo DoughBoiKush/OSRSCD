@@ -27,10 +27,6 @@ public class FileRequest {
         this.file = file;
     }
 
-    public long hash2() {
-        return ((long) index << 48) | file;
-    }
-
     public long hash() {
         return ((long) index << 16) | file;
     }

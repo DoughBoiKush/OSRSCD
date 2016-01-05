@@ -1,4 +1,4 @@
-package com.sapphirus.osrscd.util;
+package com.sapphirus.osrscd.hash;
 
 /**
  * The Whirlpool hashing function.
@@ -150,9 +150,9 @@ public class Whirlpool {
 
     public static byte[] whirlpool(byte[] data, int off, int len) {
         byte source[];
-        if (off <= 0) {
+        if (off <= 0)
             source = data;
-        } else {
+        else {
             source = new byte[len];
             for (int i = 0; i < len; i++)
                 source[i] = data[off + i];
