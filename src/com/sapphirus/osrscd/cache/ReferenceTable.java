@@ -2,6 +2,9 @@ package com.sapphirus.osrscd.cache;
 
 import java.nio.ByteBuffer;
 
+
+import static com.sapphirus.osrscd.utils.BufferUtilities.getSmart;
+
 /**
  * Contains data about the files stored inside each cache index.
  *
@@ -264,7 +267,4 @@ public class ReferenceTable {
         return crc;
     }
 
-    private static int getSmart(ByteBuffer buffer) {
-        return buffer.get(buffer.position()) >= 0 ? buffer.getShort() & 0xffff : buffer.getInt() & 0x7fffffff;
-    }
 }

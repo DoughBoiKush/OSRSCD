@@ -4,6 +4,10 @@ import java.io.IOException;
 import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
 
+
+import static com.sapphirus.osrscd.utils.BufferUtilities.getMediumInt;
+import static com.sapphirus.osrscd.utils.BufferUtilities.putMediumInt;
+
 /**
  * Manages the reading and writing for a particular file store in the cache.
  *
@@ -242,16 +246,4 @@ public class FileStore {
             return false;
         }
     }
-
-    private static int getMediumInt(ByteBuffer buffer) {
-        return ((buffer.get() & 0xff) << 16) | ((buffer.get() & 0xff) << 8) |
-                (buffer.get() & 0xff);
-    }
-
-    private static void putMediumInt(ByteBuffer buffer, int val) {
-        buffer.put((byte) (val >> 16));
-        buffer.put((byte) (val >> 8));
-        buffer.put((byte) val);
-    }
-
 }
