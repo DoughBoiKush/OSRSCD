@@ -1,6 +1,7 @@
 package com.sapphirus.osrscd.cache;
 
 import java.nio.ByteBuffer;
+import java.util.Arrays;
 
 
 import static com.sapphirus.osrscd.utils.BufferUtilities.getSmart;
@@ -78,8 +79,8 @@ public class ReferenceTable {
      * @param buffer The reference table data
      */
     public ReferenceTable(ByteBuffer buffer) {
-        buffer.position(5);
-        entryCount = 16;//buffer.get() & 0xff;
+        buffer.position(1);
+        entryCount = buffer.getInt() / 8;
         entries = new Entry[entryCount];
 
         for (int i = 0; i < entryCount; i++) {
