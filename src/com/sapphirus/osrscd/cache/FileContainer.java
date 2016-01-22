@@ -59,16 +59,17 @@ public class FileContainer {
             return buffer;
         }
         byte[] result = new byte[size];
-            try {
-                DataInputStream stream = new DataInputStream(compression == 1 ? new BZip2CompressorInputStream(
-                        new ByteArrayInputStream(buffer)) : new GZIPInputStream(
-                        new ByteArrayInputStream(buffer)));
-                stream.readFully(result);
-                stream.close();
-            } catch (IOException ioex) {
-                ioex.printStackTrace();
-                return null;
-            }
+        try {
+            DataInputStream stream = new DataInputStream(compression == 1 ? new BZip2CompressorInputStream(
+                    new ByteArrayInputStream(buffer)) : new GZIPInputStream(
+                    new ByteArrayInputStream(buffer)));
+            stream.readFully(result);
+            stream.close();
+        } catch (IOException ioex) {
+            ioex.printStackTrace();
+            return null;
+        }
+
         return result;
     }
 
