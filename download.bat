@@ -1,2 +1,2 @@
-java -jar OSRCD.jar
+java -jar OSRSCD.jar
 pause
