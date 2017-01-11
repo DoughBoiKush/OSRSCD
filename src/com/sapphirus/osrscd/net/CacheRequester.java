@@ -173,7 +173,6 @@ public class CacheRequester {
 
                                 int index = inputBuffer.get() & 0xff;
                                 int file = inputBuffer.getShort();
-                                boolean debug = false;
                                 if(file < 0) file = (file & 0xff) + 32768;
                                 int compression = (inputBuffer.get() & 0xff) & 0x7f;
                                 int fileSize = inputBuffer.getInt();
