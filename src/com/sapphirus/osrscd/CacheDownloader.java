@@ -20,7 +20,7 @@ import java.util.zip.CRC32;
  */
 public class CacheDownloader {
 
-    private static final int REVISION = 102;
+    private static final int REVISION = 128;
     private static final int WORLD = 18;
 
 

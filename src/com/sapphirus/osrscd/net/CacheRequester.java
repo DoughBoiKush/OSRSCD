@@ -170,8 +170,11 @@ public class CacheRequester {
                             if (current == null) {
                                 inputBuffer.clear();
                                 input.read(inputBuffer.array());
+
                                 int index = inputBuffer.get() & 0xff;
                                 int file = inputBuffer.getShort();
+                                boolean debug = false;
+                                if(file < 0) file = (file & 0xff) + 32768;
                                 int compression = (inputBuffer.get() & 0xff) & 0x7f;
                                 int fileSize = inputBuffer.getInt();
                                 long hash = ((long) index << 16) | file;
@@ -179,7 +182,6 @@ public class CacheRequester {
                                 if (current == null) {
                                     throw new IOException();
                                 }
-
                                 int size = fileSize
                                         + (compression == 0 ? 5 : 9)
                                         + (index != 255 ? 2 : 0);
